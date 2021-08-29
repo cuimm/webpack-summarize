@@ -7,7 +7,7 @@ module.exports = {
   entry: './src/index.js',    // 入口文件路径
   output: {
     path: path.resolve(__dirname, 'dist'),  // 输出文件目录（只能是绝对路径）
-    filename: 'bundle.js',    // 打包后的文件名
+    filename: '[name].js',    // 打包后的文件名
   },
   plugins: [
       new HtmlWebpackPlugin({
