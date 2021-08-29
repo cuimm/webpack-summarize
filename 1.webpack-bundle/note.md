@@ -24,3 +24,8 @@
 - 如果该模块是一个ES6模块，那么它的默认导出会挂在导出对象的default属性上
 - 如果是一个commonjs模块，直接获取导出对象
 
+8. __webpack_require__.e 方法
+- import方法异步加载模块时调用，使用JSONP方式异步加载模块
+
+9. __webpack_require__.t 方法
+- 创建一个命名空间对象，不论原模块是ES6还是commonjs，都转成es6模块
