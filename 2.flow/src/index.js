@@ -1,3 +1,7 @@
-import title from './title';
+// require('./title');
 
-console.log(title);
+require('./index.css');
+
+const sum = (a, b) => {
+  return a + b;
+};

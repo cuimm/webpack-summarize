@@ -11,10 +11,10 @@ compiler.run((error, stats) => {
 
   const result = stats.toJson({
     entries: true, // 打包入口
-    chunks:true, // 产生的代码块
-    module:true, // 产生的模块
-    assets:true, // 产生的资源
-    files:true, // 产生的文件
+    chunks: true, // 产生的代码块
+    module: true, // 产生的模块
+    assets: true, // 产生的资源
+    files: true, // 产生的文件
   });
 
   console.log('stats', JSON.stringify(result, null, 2));
