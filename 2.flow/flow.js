@@ -37,11 +37,14 @@ class Compiler {
     const modules = []; // 存放所有的模块
     const chunks = [];  // 存放所有的代码块
     const assets = {};  // 存放所有的资源
-    const files = []; // 存放所有的文件
+    const files = []; // 存放所有的文件 files = Object.keys(assets)
 
     // 5、确定入口。根据配置中的entry找出所有的入口文件。
     const entry = path.join(this.config.context, this.config.entry);
-    entries.push(entry);
+    entries.push({
+      name: 'main',
+      entry
+    });
 
     // 6、编译模块。从入口文件出发，调用所有配置的loader对模块进行编译
     // 6-1、读取入口entry文件的内容
@@ -52,7 +55,7 @@ class Compiler {
       source: entrySource,
       name: 'main',
     };
-    modules.push(module);
+    modules.push(entryModule);
 
     // 6-2、把entryModule编译成抽象语法树，然后通过 require、import 找到里面的依赖，递归的编译所有依赖的模块
     const cssPath = path.join(this.config.context, './src/index.css');
@@ -63,6 +66,7 @@ class Compiler {
       source: cssSource,
       name: 'main',
     };
+    modules.push(cssModule);
 
     // 7、输出资源。根据入口和模块之间的依赖关系，组装成一个个包含多个模块的chunk。
     const chunk = {
