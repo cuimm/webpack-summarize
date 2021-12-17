@@ -1,6 +1,7 @@
 /*
 * VLQ - Variable Length Quantities
 *
+* vlq源码位置：/node_modules/@types/webpack/node_modules/source-map/lib/base64-vlq.js
 *
 * 如何将 1024 进行VLQ编码？
 * */
@@ -25,7 +26,7 @@ let binary = Math.abs(targetNumber).toString(2); // 10000000000
 binary = targetNumber > 0 ? binary + '0' : binary + '1'; // 100000000000
 
 
-// 3、从最右边到最左边，每5位划分一组，不足5位的左边补充0。-- 000100000000000，一共15位
+// 3、从最右边到最左边，每5位划分一组，不足5位的左边补充0。-- 00010 00000 00000，一共15位
 let padded = binary.padStart(Math.ceil(binary.length / 5) * 5, '0'); // 000100000000000
 
 
@@ -33,7 +34,7 @@ let padded = binary.padStart(Math.ceil(binary.length / 5) * 5, '0'); // 00010000
 let parts = padded.match(/\d{5}/g); // [ '00010', '00000', '00000' ]
 parts.reverse(); // [ '00000', '00000', '00010' ]
 
-// 5、在最左边为每组补充一位，如果这组是这个数组的最后一组，那么补充0，面前的组补充1。 -- [ '100000', '100000', '000010' ]
+// 5、在最左边为每组补充一位，如果这组是这个数组的最后一组，那么补充0，前面的组补充1。 -- [ '100000', '100000', '000010' ]
 parts = parts.map((item, index) => (index === parts.length - 1) ? '0' + item : '1' + item);
 
 // 6、将组数字转成base64
