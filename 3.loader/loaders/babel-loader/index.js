@@ -2,10 +2,15 @@ const babel = require('@babel/core');
 
 function babelLoader(source) {
 
+  console.log('request=', this.request); // /Users/mengmeng19/Documents/cuimm/webpack/webpack-summarize/3.loader/loaders/babel-loader/index.js!/Users/mengmeng19/Documents/cuimm/webpack/webpack-summarize/3.loader/src/index.js
+  console.log('resourcePath=', this.resourcePath); // /Users/mengmeng19/Documents/cuimm/webpack/webpack-summarize/3.loader/src/index.js
+  console.log('userRequest=', this.userRequest);
+  console.log('rawRequest=', this.rawRequest);
+
   const opts = {
     presets: ['@babel/preset-env'], // 配置预设，这是一个插件包
-    sourceMap: true, // 生成sourcemap文件，才可以调试源码
-    filename: this.resourcePath.split('/').pop(), // resourcePath 是要转译的文件的绝对路径
+    sourceMap: true, // 生成sourceMap文件，才可以调试源码。生成的是经过 babel-loader 转译后的代码的sourceMap文件
+    filename: this.resourcePath.split('/').pop(), // filename可生成用于调试的文件名，否则文件名是unknown，无法确认当前文件是哪个（resourcePath 是要转译的文件的绝对路径）
   };
 
   const { code, map, ast, options, sourceType } = babel.transform(source, opts);

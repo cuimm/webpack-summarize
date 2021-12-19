@@ -29,3 +29,56 @@
 
 9. __webpack_require__.t 方法
 - 创建一个命名空间对象，不论原模块是ES6还是commonjs，都转成es6模块
+
+10. webpack 打包流程
+    1. 初始化参数。
+        - 从配置文件和shell语句中读取并合并参数，得到最终的编译参数。
+    2. 初始化Compiler对象。
+        - 用上一步得到的配置参数，调用webpack方法，初始化Compiler对象。
+    3. 注册插件 plugins。
+        - 执行plugin的apply方法，注册插件。
+    4. 开始编译。
+        - 执行compiler的run方法，开始编译。
+    5. 确定入口
+        - 根据配置的entry，找到所有的入口文件。
+    6. 编译模块
+        - 读取入口模块的内容，编译成抽象语法树 ast，通过 require、import 找到入口文件的依赖模块。
+        - 递归的编译模块文件依赖的所有模块。
+        - 按照入口模块的依赖关系，组装成一个个的代码块 chunk。
+    7. 输出资源
+        - 将每个代码块 chunk 转换成一个个的文件加入输出列表。
+        - 根据配置 output 确定输出的路径和文件名，将文件写入文件系统。
+
+11. `webpack` 的 `devtool` 和 `babel-loader` 的 `sourceMap` 有什么关系？
+- `babel-loader` 可以按照 `sourceMap: true` 配置生成sourceMap文件，生成的是`源码的sourceMap文件`。
+- `webpack` 可以按照 `devtool: source-map` 配置可以生成我们要求的sourceMap文件，生成的是`babel-loader转译后的代码的sourcemap文件`。
+- `babel-loader`按照源码生成sourceMap，`webpack`根据babel-loader转译代码生成sourceMap。
+- 只有`babel-loader`和`webpack`都生成sourceMap才可调试`源码`。
+- 如果`babel-loader`不生成sourceMap，只有`webpack`生成sourceMap，那么我们调试时只能调试`babel-loader`转译过的代码。
+- 如果`babel-loader`生成sourceMap，而`webpack`不生成sourceMap，那么我们只能调试打包后的代码。
+- 但是这两个配置都不影响最终生成的打包文件。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

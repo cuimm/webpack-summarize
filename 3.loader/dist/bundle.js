@@ -96,10 +96,34 @@
 "use strict";
 
 
+__webpack_require__(/*! ./title */ "./src/title.js");
+
 var sum = function sum(a, b) {
   return a + b;
 };
 
+/***/ }),
+
+/***/ "./src/title.js":
+/*!**********************!*\
+  !*** ./src/title.js ***!
+  \**********************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var title = 'title';
+debugger;
+var _default = title;
+exports["default"] = _default;
+
 /***/ })
 
 /******/ });
+//# sourceMappingURL=bundle.js.map
