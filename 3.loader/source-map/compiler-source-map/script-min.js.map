@@ -1,0 +1,8 @@
+{
+"version":3,
+"file":"script-min.js",
+"lineCount":1,
+"mappings":"AAAA,IAAMA,EAAI,CAAV,CACMC,EAAI,CADV,CAEMC,EAAI;",
+"sources":["script.js"], // 转化前的文件
+"names":["a","b","c"] // 转化前的所有变量名和属性名
+}
