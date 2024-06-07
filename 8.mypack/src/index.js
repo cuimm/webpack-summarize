@@ -1,1 +1,3 @@
-import('./title');
+import('./title.less');
+// require('./title.less');
+

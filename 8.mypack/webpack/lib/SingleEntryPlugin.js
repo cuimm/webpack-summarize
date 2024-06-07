@@ -12,18 +12,13 @@ class SingleEntryPlugin {
   }
 
   apply(compiler) {
-
     // 监听 make 钩子
     compiler.hooks.make.tapAsync('SingleEntryPlugin', (compilation, callback) => {
-
       // 从此处入口开始编译
       const { context, entry, name } = this;
-
       // 开始编译一个新的入口文件
       compilation.addEntry(context, entry, name, callback);
-
     });
-
   }
 }
 

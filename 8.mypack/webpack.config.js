@@ -1,4 +1,4 @@
-const path  = require('path');
+const path = require('path');
 
 module.exports = {
   context: process.cwd(), // 当前工作目录
