@@ -24,6 +24,7 @@ class Compilation extends Tapable {
     this.vendors = []; // 第三方模块
     this.commons = []; // 同时被多个代码块依赖的模块
     this.moduleCount = {}; // 每个模块被代码块引用的次数，如果大于等于2，就分离到commons内
+    this.asyncChunkCounter = 0;
     this.hooks = {
       succeedModule: new SyncHook(['module']),
       seal: new SyncHook(),

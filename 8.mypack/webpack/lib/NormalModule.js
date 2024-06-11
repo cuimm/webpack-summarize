@@ -40,43 +40,37 @@ class NormalModule {
       traverse(this._ast, {
         CallExpression: nodePath => { // 当遍历到 CallExpression节点的时候，就会进入回调
           const node = nodePath.node; // 节点
-          if (node.callee.name === 'require') { // 方法名是 require
-            // 将方法名改为 __webpack_require__
+          if (node.callee.name === 'require') { // 方法名是 require。如：require('./title.less')
+            console.log('require 引入');
+            // 1. 将方法名改为 __webpack_require__
             node.callee.name = '__webpack_require__';
-
-            // 获取当前依赖的模块名称（./title.less））
+            // 2. 获取当前依赖的模块名称（./title.less））
             const moduleName = node.arguments[0].value;
-
-            // 计算依赖模块的绝对路径
+            // 3. 计算依赖模块的绝对路径
             let depResource;
             if (moduleName.startsWith('.')) {
               /** 如果模块的名字是以.开头，说明是一个本地模块，或者说用户自定义模块 **/
-
-                // 获得可能的扩展名
+              // 获得可能的扩展名
               const extName = moduleName.split(path.posix.sep).pop().indexOf('.') == -1 ? '.js' : '';
-
               // 获取依赖模块(./src/title.less)的绝对路径（win \ linux /）（/Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack/src/title.less）
               depResource = path.posix.join(path.posix.dirname(this.resource), moduleName + extName);
             } else {
               /** 否则是第三方模块（node_modules 里的模块）**/
-
               depResource = require.resolve(path.posix.join(this.context, 'node_modules', moduleName));
               depResource = depResource.replace(/\\/g, '/'); // 把window里的 \ 转成 /
             }
-
-            // 依赖的模块ID：./ + 从根目录出发到依赖模块的绝对路径的相对路径
+            // 4. 依赖的模块ID：./ + 从根目录出发到依赖模块的绝对路径的相对路径
             const depModuleId = '.' + depResource.slice(this.context.length);
-
-
-            // 修改节点arguments：将 require引入的模块路径从./title.less 转换成 ./src/title.less
+            // 5. 修改节点arguments，将 require引入的模块路径从./title.less 转换成 ./src/title.less
             node.arguments = [types.stringLiteral(depModuleId)];
 
+            // 6. 加入当前模块依赖
             this.dependencies.push({
               name: this.name, // 入口的名字（main）
               context: this.context, // 当前工作目录的绝对路径（/Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack）
               rawRequest: moduleName, // 依赖模块的最初引入路径（./title.less）
-              moduleId: depModuleId, // 依赖模块的Id：相对于根目录的相对路径，以 ./ 开头
-              resource: depResource, // 依赖模块的绝对路径
+              moduleId: depModuleId, // 依赖模块的Id：相对于根目录的相对路径，以 ./ 开头（./src/title.less）
+              resource: depResource, // 依赖模块的绝对路径（/Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack/src/title.less）
             });
 
             console.log('当前模块绝对路径：', this.resource);
@@ -93,12 +87,79 @@ class NormalModule {
                }
              ]
              */
-          } else if (types.isImport(node.callee)) {
+          } else if (types.isImport(node.callee)) { // import 引入。如：import('./title.less')，异步引入
             console.log('import 引入');
+            // 1. 获取模块名称（./title.less）
+            const moduleName = node.arguments[0].value;
+            // 2. 获取可能的扩展名
+            const extName = moduleName.split(path.posix.sep).pop().indexOf('.') == -1 ? '.js' : '';
+            // 3. 获取依赖的模块的绝对路径
+            const depResource = path.posix.join(path.posix.dirname(this.resource), moduleName + extName);
+            // 4.依赖的模块ID：./ + 从根目录出发到依赖模块的绝对路径的相对路径 ./src/title.less
+            const depModuleId = './' + path.posix.relative(this.context, depResource);
+
+            // 异步引入默认生成的代码块名字。如果不指定webpackChunkName，代码块名字就是数字，0.js\1.js\2.js...
+            let chunkName = compilation.asyncChunkCounter++;
+            // 判断是否存在模块注释，如：import(/* webpackChunkName: "title" */'./title.less');
+            if (Array.isArray(node.arguments[0].leadingComments) && node.arguments[0].leadingComments.length > 0) {
+              const leadingComments = node.arguments[0].leadingComments[0].value; // 获取魔法注释的值：webpackChunkName: \"title\"
+              let regexp = /webpackChunkName:\s*['"]([^'"]+)['"]/;
+              chunkName = leadingComments.match(regexp)[1]; // 获取魔法注释内的代码块名称，title
+            }
+            nodePath.replaceWithSourceString(`__webpack_require__.e("${chunkName}").then(__webpack_require__.t.bind(null,"${depModuleId}", 7))`); // async import
+
+            // 当前模块依赖的异步模块数组
+            this.blocks.push({
+              context: this.context, // 当前工作目录的绝对路径（/Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack）
+              entry: depModuleId, // 依赖的异步模块入口路径（./src/title.less）
+              name: chunkName, // 默认是数字，可通过魔法注释指定chunkName
+              async: true, // 当前模块依赖的模块为异步代码块
+            });
+
+            console.log('当前模块绝对路径：', this.resource);
+            console.log('当前模块依赖的异步模块：', this.blocks);
+            /**
+              当前模块绝对路径： /Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack/src/index.js
+              当前模块依赖的异步模块：[
+                {
+                  context: '/Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack',
+                  entry: './src/title.less',
+                  name: 0,
+                  async: true
+                }
+              ]
+             */
           }
         },
       });
 
+      // console.log('编译后的ast语法树', this._ast);
+
+      // 将转换后的语法树重新生成源代码
+      const { code } = generate(this._ast);
+      console.log('转换前的源代码：', this._source);
+      console.log('转换后的源代码：', code);
+      /*
+      * 1. require('./title.less');
+      * 转换前的源代码： require('./title.less');
+      * 转换后的源代码： __webpack_require__("./src/title.less");
+      *
+      * 2.import('./title.less');
+      * 转换前的源代码： import('./title.less');
+      * 转换后的源代码： __webpack_require__.e("0").then(__webpack_require__.t.bind(null, "./src/title.less", 7));
+      *
+      * 3. import(\/* webpackChunkName: "title" *\/'./title.less');
+      * 转换前的源代码： import(\/* webpackChunkName: "title" *\/'./title.less')
+      * 转换后的源代码： __webpack_require__.e("title").then(__webpack_require__.t.bind(null, "./src/title.less", 7));
+      * */
+
+      this._source = code;
+
+      // 循环构建每一个异步代码块，都构建完成时，代表当前模块编译完成
+      async.forEach(this.blocks, (block, done) => {
+        const { context, entry, name, async } = block;
+        compilation._addModuleChain(context, entry, name, async, done); // 构建异步模块
+      }, callback);
     });
   }
 
