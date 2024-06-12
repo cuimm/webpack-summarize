@@ -1,6 +1,9 @@
+const path = require('path');
+const mkdirp = require('mkdirp');
 const { Tapable, SyncHook, SyncBailHook, AsyncSeriesHook, AsyncParallelHook } = require('tapable');
 const NormalModuleFactory = require('./NormalModuleFactory');
 const Compilation = require('./Compilation');
+const Stats = require('./Stats');
 
 class Compiler extends Tapable {
   constructor(context) {
@@ -28,7 +31,7 @@ class Compiler extends Tapable {
       // 本次编译：创建完成一个新的compilation
       compilation: new SyncHook(['compilation', 'params']),
       // 编译完成
-      afterCompiler: new AsyncSeriesHook(['compilation']),
+      afterCompile: new AsyncSeriesHook(['compilation']),
       // 发射
       emit: new AsyncSeriesHook(['compilation']),
       // 所有的编译全部都完成
@@ -68,13 +71,42 @@ class Compiler extends Tapable {
   }
 
   /**
+   * 输出资源
+   * @param compilation
+   * @param callback
+   */
+  emitAssets(compilation, callback) {
+
+    const emitFiles = error => {
+      const assets = compilation.assets;
+      const outputPath = this.options.output.path; // 输出文件目录（/Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack/dist）
+      for (const file in assets) {
+        const source = assets[file]; // 当前文件编译后的源代码
+        const targetPath = path.posix.join(outputPath, file); // 输出文件路径（/Users/cuimm/Documents/cuimm/webpack/webpack-summarize/8.mypack/dist/[title.js|0.js]）
+        this.outputFileSystem.writeFileSync(targetPath, source, 'utf8');
+      }
+      callback();
+    };
+
+    this.hooks.emit.callAsync(compilation, () => {
+      mkdirp(this.options.output.path, emitFiles);
+    });
+  }
+
+  /**
    * 编译入口
    * @param callback 回调函数
    */
   run(callback) {
 
+    // 编译完成后的回调
     const onCompiled = (error, compilation) => {
-      // todo
+      this.emitAssets(compilation, error => {
+        const stats = new Stats(compilation);
+        this.hooks.done.callAsync(stats, error => {
+          callback(error, stats);
+        });
+      });
     };
 
     this.hooks.beforeRun.callAsync(this, error => { // 触发 beforeRun 钩子

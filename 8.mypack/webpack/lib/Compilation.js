@@ -10,8 +10,8 @@ const Chunk = require('./Chunk');
 /**
  * 编译模版
  */
-const mainTemplate = fs.readFileSync(path.join(__dirname, 'templates', 'deferMain.ejs'), 'utf8');
-const mainRender = ejs.compile(mainTemplate);
+const deferMainTemplate = fs.readFileSync(path.join(__dirname, 'templates', 'deferMain.ejs'), 'utf8');
+const deferMainRender = ejs.compile(deferMainTemplate);
 const chunkTemplate = fs.readFileSync(path.join(__dirname, 'templates', 'chunk.ejs'), 'utf8');
 const chunkRender = ejs.compile(chunkTemplate);
 
@@ -224,8 +224,10 @@ class Compilation extends Tapable {
     // 触发 afterChunks 钩子
     this.hooks.afterChunks.call(this.chunks);
 
-
+    // 生成代码块对应的资源
     this.createChunkAssets();
+
+    callback();
   }
 
   /**
@@ -251,7 +253,7 @@ class Compilation extends Tapable {
         if (this.commons.length > 0) {
           deferredChunks.push('commons');
         }
-        source = mainRender({
+        source = deferMainRender({
           deferredChunks,
           entryModuleId: chunk.entryModule.moduleId,  // ./src/index.js
           modules: chunk.modules, // 此代码块包含的模块数组（[module实例1, module实例2]）

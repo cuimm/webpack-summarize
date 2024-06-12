@@ -145,17 +145,16 @@
     for (var i = 0; i < jsonpArray.length; i++) webpackJsonpCallback(jsonpArray[i]);
     var parentJsonpFunction = oldJsonpFunction;
 
-    deferredModules.push(["<%-entryModuleId%>"<%-deferredChunks.length>0?(',"'+deferredChunks.join('","')+'"'):''%>]);
+    deferredModules.push(["./src/index.js"]);
     return checkDeferredModules();
   })
     ({
-        <%
-        for(let module of modules)
-        {%>
-            "<%-module.moduleId%>":
+        
+            "./src/index.js":
             (function (module, exports, __webpack_require__) {
-              <%-module._source%>
+              // import('./title.less');
+__webpack_require__.e("title").then(__webpack_require__.t.bind(null, "./src/title.less", 7));
+// require('./title.less');
             }),
-        <%}
-      %>
+        
     });
