@@ -73,7 +73,7 @@ class Compiler extends Tapable {
    */
   run(callback) {
 
-    const onCompiled = () => {
+    const onCompiled = (error, compilation) => {
       // todo
     };
 
@@ -102,7 +102,12 @@ class Compiler extends Tapable {
 
       // 触发 make构建 钩子执行：开始编译模块
       this.hooks.make.callAsync(compilation, error => {
-        // todo
+        // 代码块封装之后编译就完成了
+        compilation.seal(error => {
+          this.hooks.afterCompile.callAsync(compilation, error => {
+            onCompiled(error, compilation);
+          });
+        });
       });
 
     });
